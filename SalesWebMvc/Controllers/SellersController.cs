@@ -23,13 +23,13 @@ namespace SalesWebMvc.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var list = _sellerService.FindAllasync();
+            var list = await _sellerService.FindAllasync();
             return View(list);
         }
         public async Task<IActionResult> Create()
         {
-            var departments = _departmentService.FindAllAsync();
-            var viewModel = new SellerFormViewModel { Departments = departments };
+            var departments = await _departmentService.FindAllAsync();
+            var viewModel = new SellerFormViewModel { Departments = (ICollection<Department>)departments };
             return View(viewModel);
         }
         [HttpPost]
@@ -62,8 +62,16 @@ namespace SalesWebMvc.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete (int id)
         {
-            await _sellerService.RemoveAsync(id);
-            return RedirectToAction(nameof(Index));
+            try
+                {
+                await _sellerService.RemoveAsync(id);
+                return RedirectToAction(nameof(Index));
+                }
+            catch(IntegrityException e)
+                {
+                return RedirectToAction(nameof(Error), new { message = e.Message });
+                }
+            
         }
         public async Task<ActionResult> Details(int? id)
         {
